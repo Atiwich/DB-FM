@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - ระบบจัดการแปลงเกษตรอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-emerald-700 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-center space-x-3">
+            <span class="text-3xl">🌱</span>
+            <h1 class="text-2xl font-extrabold">ระบบจัดการแปลงเกษตรอัจฉริยะ</h1>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 my-4">
+        <div class="bg-white rounded-3xl shadow-lg border-2 border-slate-200 overflow-hidden max-w-md w-full">
+            <div class="relative h-40 bg-emerald-800 flex items-end p-4">
+                <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80"
+                    alt="แปลงเกษตร" class="absolute inset-0 w-full h-full object-cover opacity-50">
+                <div class="relative z-10 text-white">
+                    <h2 class="text-2xl font-extrabold drop-shadow">ยินดีต้อนรับเกษตรกร</h2>
+                    <p class="text-emerald-100 text-base font-semibold">เข้าใช้งานง่าย ปุ่มใหญ่ อ่านสะดวก</p>
+                </div>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <div class="flex rounded-2xl bg-slate-100 p-1 border border-slate-200">
+                    <button id="tab-login" onclick="toggleForm('login')"
+                        class="flex-1 py-3 text-lg font-bold rounded-xl bg-emerald-700 text-white transition">
+                        🔑 เข้าสู่ระบบ
+                    </button>
+                    <button id="tab-register" onclick="toggleForm('register')"
+                        class="flex-1 py-3 text-lg font-bold rounded-xl text-slate-600 transition">
+                        📝 สมัครใหม่
+                    </button>
+                </div>
+
+                <!-- ฟอร์มเข้าสู่ระบบ -->
+                <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-lg font-extrabold text-slate-700 mb-1">📱 เบอร์โทรศัพท์</label>
+                        <input type="tel" id="login-phone" required placeholder="กรอกเบอร์โทรศัพท์"
+                            class="w-full text-lg p-3.5 rounded-xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-lg font-extrabold text-slate-700 mb-1">🔒 รหัสผ่าน</label>
+                        <input type="password" required placeholder="กรอกรหัสผ่าน"
+                            class="w-full text-lg p-3.5 rounded-xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none bg-slate-50 font-bold">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xl py-4 rounded-xl shadow-md transition active:scale-95">
+                        🚀 เข้าใช้งานระบบ
+                    </button>
+                </form>
+
+                <!-- ฟอร์มสมัครสมาชิก -->
+                <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-lg font-extrabold text-slate-700 mb-1">👤 ชื่อ-นามสกุล</label>
+                        <input type="text" id="reg-name" required placeholder="เช่น ลุงบุญมี มีสุข"
+                            class="w-full text-lg p-3.5 rounded-xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-lg font-extrabold text-slate-700 mb-1">📱 เบอร์โทรศัพท์</label>
+                        <input type="tel" required placeholder="08X-XXX-XXXX"
+                            class="w-full text-lg p-3.5 rounded-xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none bg-slate-50 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-lg font-extrabold text-slate-700 mb-1">🔒 ตั้งรหัสผ่าน</label>
+                        <input type="password" required placeholder="ตั้งรหัสผ่านง่ายๆ"
+                            class="w-full text-lg p-3.5 rounded-xl border-2 border-slate-300 focus:border-emerald-600 focus:outline-none bg-slate-50 font-bold">
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xl py-4 rounded-xl shadow-md transition active:scale-95">
+                        ✅ ยืนยันสมัครสมาชิก
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-3 text-center text-sm font-bold text-slate-500">
+        รายวิชา 227202 พื้นฐานของระบบฐานข้อมูล | สาขาวิชาวิศวกรรมซอฟต์แวร์ มหาวิทยาลัยพะเยา
+    </footer>
+
+    <script>
+        function toggleForm(type) {
+            const loginForm = document.getElementById('form-login');
+            const registerForm = document.getElementById('form-register');
+            const loginTab = document.getElementById('tab-login');
+            const registerTab = document.getElementById('tab-register');
+
+            if (type === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTab.className = "flex-1 py-3 text-lg font-bold rounded-xl bg-emerald-700 text-white transition";
+                registerTab.className = "flex-1 py-3 text-lg font-bold rounded-xl text-slate-600 transition";
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                registerTab.className = "flex-1 py-3 text-lg font-bold rounded-xl bg-emerald-700 text-white transition";
+                loginTab.className = "flex-1 py-3 text-lg font-bold rounded-xl text-slate-600 transition";
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const phone = document.getElementById('login-phone').value;
+            localStorage.setItem('smartFarmUser', 'เกษตรกร (' + phone + ')');
+            window.location.href = 'index.html';
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            localStorage.setItem('smartFarmUser', name);
+            alert('สมัครสมาชิกสำเร็จ!');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

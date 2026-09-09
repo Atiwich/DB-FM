@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกการเงิน - เกษตรอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between" onload="loadPlotOptions()">
+
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html"
+                class="flex items-center space-x-2 bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded-xl text-white transition">
+                <span class="text-2xl">⬅️</span>
+                <span class="font-extrabold text-lg">หน้าแรก</span>
+            </a>
+            <h1 class="text-xl font-extrabold">บันทึกการเงิน</h1>
+        </div>
+    </header>
+
+    <main class="max-w-3xl mx-auto px-4 py-6 w-full space-y-6">
+
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+            <h2 class="text-2xl font-extrabold text-slate-800 border-b pb-3">💰 กรอกรายการ รายรับ / รายจ่าย</h2>
+
+            <form onsubmit="saveFinance(event)" class="space-y-4">
+                <!-- ดรอปดาวน์เลือกแปลงแบบละเอียด -->
+                <div>
+                    <label class="block text-lg font-extrabold text-slate-700 mb-1">เลือกแปลงเกษตรที่เกี่ยวข้อง</label>
+                    <select id="finance-plot"
+                        class="w-full text-lg p-4 rounded-xl border-2 border-slate-300 bg-slate-50 font-bold focus:border-emerald-600 focus:outline-none"
+                        required>
+                        <!-- โหลดแปลงเกษตรอัตโนมัติ -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-lg font-extrabold text-slate-700 mb-1">ประเภทรายการ</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label
+                            class="flex items-center justify-center p-4 border-2 rounded-xl cursor-pointer bg-emerald-50 border-emerald-500 text-emerald-900 font-extrabold text-xl">
+                            <input type="radio" name="fin_type" value="INCOME" checked class="w-5 h-5 mr-2"> 💰 รายได้
+                        </label>
+                        <label
+                            class="flex items-center justify-center p-4 border-2 rounded-xl cursor-pointer bg-rose-50 border-rose-500 text-rose-900 font-extrabold text-xl">
+                            <input type="radio" name="fin_type" value="EXPENSE" class="w-5 h-5 mr-2"> 💸 ต้นทุน/รายจ่าย
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-lg font-extrabold text-slate-700 mb-1">จำนวนเงิน (บาท)</label>
+                    <input type="number" id="finance-amount" step="any" placeholder="เช่น 1500"
+                        class="w-full text-xl p-4 rounded-xl border-2 border-slate-300 bg-slate-50 font-bold focus:border-emerald-600 focus:outline-none"
+                        required>
+                </div>
+
+                <div>
+                    <label class="block text-lg font-extrabold text-slate-700 mb-1">รายละเอียดรายการ</label>
+                    <input type="text" id="finance-desc" placeholder="เช่น ค่าปุ๋ยสูตร 16-16-16, ขายข้าวเปลือก"
+                        class="w-full text-xl p-4 rounded-xl border-2 border-slate-300 bg-slate-50 font-bold focus:border-emerald-600 focus:outline-none"
+                        required>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-2xl py-4 rounded-xl shadow-md transition active:scale-95">
+                    ✅ บันทึกรายการเงิน
+                </button>
+            </form>
+        </div>
+
+    </main>
+
+    <script>
+        function loadPlotOptions() {
+            // หากยังไม่มีข้อมูลแปลงใน LocalStorage จะสร้างชุดข้อมูลแปลงตัวอย่างหลายๆ แบบไว้ให้เลือกทันที
+            let plots = JSON.parse(localStorage.getItem('farm_plots'));
+            if (!plots || plots.length === 0) {
+                plots = [
+                    { id: 1, name: "แปลงนาหนองบัว", size: 5, crop: "ข้าวหอมมะลิ 105", status: "PLANTING" },
+                    { id: 2, name: "แปลง A2 (หลังบ้าน)", size: 2, crop: "ผักสลัดออร์แกนิก", status: "PLANTING" },
+                    { id: 3, name: "แปลงไร่โพธิ์ทอง", size: 8, crop: "ข้าวโพดเลี้ยงสัตว์", status: "PLANTING" },
+                    { id: 4, name: "แปลงร่องสวน C3", size: 3, crop: "มะม่วงน้ำดอกไม้", status: "PLANTING" },
+                    { id: 5, name: "แปลง D4 (เตรียมดิน)", size: 4, crop: "", status: "EMPTY" }
+                ];
+                localStorage.setItem('farm_plots', JSON.stringify(plots));
+            }
+
+            const select = document.getElementById('finance-plot');
+            // เพิ่มตัวเลือกส่วนกลางสำหรับค่าใช้จ่ายรวมของฟาร์ม
+            let optionsHTML = `<option value="0">🏢 ค่าใช้จ่ายส่วนกลาง / ไม่ระบุแปลง (รวมทั้งฟาร์ม)</option>`;
+
+            // วนลูปสร้างตัวเลือกแปลงพร้อมแสดงพืชและขนาดไร่
+            plots.forEach(p => {
+                const cropDetail = p.crop ? ` [ปลูก: ${p.crop}]` : ' [แปลงว่าง]';
+                optionsHTML += `<option value="${p.id}">🌾 ${p.name} (${p.size} ไร่)${cropDetail}</option>`;
+            });
+
+            select.innerHTML = optionsHTML;
+        }
+
+        function saveFinance(e) {
+            e.preventDefault();
+            const plotId = document.getElementById('finance-plot').value;
+            const type = document.querySelector('input[name="fin_type"]:checked').value;
+            const amount = document.getElementById('finance-amount').value;
+            const desc = document.getElementById('finance-desc').value;
+
+            const finances = JSON.parse(localStorage.getItem('farm_finances') || '[]');
+            finances.unshift({
+                plot_id: Number(plotId),
+                type: type,
+                amount: Number(amount),
+                desc: desc,
+                date: new Date().toLocaleDateString('th-TH')
+            });
+
+            localStorage.setItem('farm_finances', JSON.stringify(finances));
+
+            alert('✅ บันทึกรายการเงินเรียบร้อยแล้ว!');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>
