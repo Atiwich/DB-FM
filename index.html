@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌾 จัดการแปลงนา - เกษตรอัจฉริยะ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- ==================== HEADER & NAVBAR ==================== -->
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl">🌾</span>
+                <div>
+                    <h1 class="text-xl font-extrabold leading-tight">เกษตรอัจฉริยะ</h1>
+                    <p class="text-xs text-emerald-200 font-semibold">ระบบคำนวณปุ๋ย & จัดการแปลงนา</p>
+                </div>
+            </div>
+            <button onclick="resetAllData()"
+                class="bg-rose-600 hover:bg-rose-700 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1 shadow">
+                🔄 รีเซ็ตข้อมูล
+            </button>
+        </div>
+
+        <!-- แถบเมนูเปลี่ยนหน้า (Navigation Tabs) -->
+        <nav class="bg-emerald-800 text-white border-t border-emerald-600">
+            <div class="max-w-4xl mx-auto flex justify-around text-center text-sm font-bold">
+                <!-- หน้าปัจจุบัน (Active) -->
+                <a href="index.html"
+                    class="w-full py-3 border-b-4 border-amber-400 bg-emerald-900 font-extrabold transition flex items-center justify-center gap-1.5">
+                    <span>🌾</span> <span>แปลงนาของฉัน</span>
+                </a>
+                <!-- ลิงก์ไปหน้าคำนวณปุ๋ย -->
+                <a href="fertilizer.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>🧪</span> <span>สูตร & คำนวณปุ๋ย</span>
+                </a>
+                <!-- ลิงก์ไปหน้าปฏิทิน -->
+                <a href="calendar.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>📅</span> <span>ปฏิทินเพาะปลูก</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="max-w-3xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
+
+        <!-- Banner สรุปสถานะ -->
+        <div
+            class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white rounded-3xl p-6 shadow-md flex justify-between items-center">
+            <div>
+                <p class="text-emerald-200 text-xs sm:text-sm font-bold">👨‍🌾 ยินดีต้อนรับสู่ระบบจัดการแปลงนา</p>
+                <h2 id="active-plot-banner" class="text-2xl sm:text-3xl font-extrabold mt-1">กำลังโหลดข้อมูล...</h2>
+                <p id="active-plot-sub" class="text-xs text-emerald-100 font-semibold mt-1">
+                    เลือกแปลงนาด้านล่างเพื่อเริ่มคำนวณปุ๋ยหรือดูปฏิทิน</p>
+            </div>
+            <span class="text-5xl hidden sm:inline">🚜</span>
+        </div>
+
+        <!-- การ์ดส่วนจัดการแปลงนา -->
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+
+            <!-- หัวข้อ & ปุ่มเพิ่มแปลงนา -->
+            <div class="flex justify-between items-center border-b pb-4 flex-wrap gap-2">
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-slate-800 flex items-center gap-2">
+                        📋 รายการแปลงนาของคุณ
+                    </h3>
+                    <p class="text-xs text-slate-500 font-bold">คลิกเลือกแปลงนาที่ต้องการเพื่อนำไปคำนวณปุ๋ยและปฏิทิน</p>
+                </div>
+                <button id="btn-open-modal"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold px-4 py-2.5 rounded-2xl shadow-md transition transform active:scale-95 flex items-center gap-1.5 text-sm">
+                    ➕ เพิ่มแปลงนาใหม่
+                </button>
+            </div>
+
+            <!-- กล่องแสดงรายการแปลงนา -->
+            <div id="plots-container" class="space-y-3">
+                <!-- Javascript จะใส่ข้อมูลแปลงนาตรงนี้ -->
+            </div>
+
+        </div>
+
+        <!-- แนะนำขั้นตอนการใช้งาน -->
+        <div
+            class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs sm:text-sm text-amber-900 font-bold space-y-2">
+            <p class="flex items-center gap-1.5 text-amber-800 text-base font-extrabold">
+                💡 คำแนะนำการใช้งาน 3 ขั้นตอนง่ายๆ:
+            </p>
+            <ol class="list-decimal list-inside space-y-1 text-slate-700">
+                <li><span class="font-extrabold text-amber-900">เพิ่มแปลงนา</span> โดยระบุ พันธุ์ข้าว, ชนิดดิน,
+                    เนื้อที่ไร่ และวันเริ่มปลูก</li>
+                <li>กดปุ่ม <span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-extrabold">🧪 สูตร &
+                        คำนวณปุ๋ย</span> เพื่อดูปริมาณกระสอบที่ต้องใช้</li>
+                <li>กดปุ่ม <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-extrabold">📅
+                        ดูปฏิทินใส่ปุ๋ย</span> เพื่อดูวันใส่ปุ๋ยและวันเก็บเกี่ยว</li>
+            </ol>
+        </div>
+
+    </main>
+
+    <!-- ==================== MODAL FORM: เพิ่มแปลงนาใหม่ ==================== -->
+    <div id="add-plot-modal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div
+            class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-4">
+
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-2xl font-extrabold text-slate-800 flex items-center gap-2">🌱 เพิ่มแปลงนาใหม่</h3>
+                <button id="btn-close-modal"
+                    class="text-slate-400 hover:text-rose-600 text-2xl font-extrabold">✕</button>
+            </div>
+
+            <form id="form-add-plot" class="space-y-3">
+                <!-- ชื่อแปลงนา -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">🌾 ชื่อแปลงนา *</label>
+                    <input type="text" id="new-plot-name" placeholder="เช่น แปลงนาสวนขวัญ, แปลง C1" required
+                        class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <!-- สายพันธุ์ข้าว -->
+                <div>
+                    <label class="block text-sm font-bold text-emerald-800 mb-1">🌾 เลือกสายพันธุ์ข้าว *</label>
+                    <select id="select-rice-preset"
+                        class="w-full bg-emerald-50 border border-emerald-300 rounded-xl px-3 py-2 font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <!-- ตัวเลือกจาก JS -->
+                    </select>
+                </div>
+
+                <!-- ชนิดดิน & เนื้อที่ -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">🧱 ชนิดของดินในนา</label>
+                        <select id="new-plot-soil"
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="clay">ดินเหนียว (อุ้มน้ำดี)</option>
+                            <option value="sandy">ดินทราย / ร่วนปนทราย</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">📏 เนื้อที่ (ไร่) *</label>
+                        <input type="number" id="new-plot-area" placeholder="เช่น 5" min="0.1" step="0.1" value="5"
+                            required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- วันเริ่มปลูก & อายุเก็บเกี่ยว -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">📅 วันที่เริ่มปลูก/หว่าน *</label>
+                        <input type="date" id="new-plot-plant-date" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-1">⏱️ อายุเก็บเกี่ยว (วัน)</label>
+                        <input type="number" id="new-plot-duration" value="120" min="1" required
+                            class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- ปุ่มการทำงาน -->
+                <div class="pt-3 flex gap-3">
+                    <button type="button" id="btn-cancel-modal"
+                        class="w-1/3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-extrabold py-3 rounded-xl transition">ยกเลิก</button>
+                    <button type="submit"
+                        class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl shadow-md transition">💾
+                        บันทึกแปลงนา</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="bg-slate-800 text-slate-400 text-center py-4 text-xs font-bold mt-auto">
+        <p>🌾 ระบบเกษตรอัจฉริยะ - จัดการปุ๋ยและปฏิทินเพาะปลูกข้าว</p>
+    </footer>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // 1. ฐานข้อมูลสายพันธุ์ข้าวเริ่มต้น
+        const RICE_PRESETS = [
+            { name: "🌾 ข้าวหอมมะลิ 105 (120 วัน)", crop: "ข้าวขาวดอกมะลิ 105", duration: 120, fert1Day: 20, fert2Day: 55, fert3Day: 80 },
+            { name: "🌾 ข้าว กข95 (85 วัน)", crop: "ข้าว กข95", duration: 85, fert1Day: 12, fert2Day: 40, fert3Day: null },
+            { name: "🌾 ข้าว กข43 (100 วัน)", crop: "ข้าว กข43", duration: 100, fert1Day: 15, fert2Day: 45, fert3Day: null },
+            { name: "🌾 ข้าว กข41 (105 วัน)", crop: "ข้าว กข41", duration: 105, fert1Day: 15, fert2Day: 45, fert3Day: null },
+            { name: "🌾 ข้าวเหนียว กข6 (125 วัน)", crop: "ข้าวเหนียว กข6", duration: 125, fert1Day: 20, fert2Day: 60, fert3Day: 85 },
+            { name: "🌾 ข้าวหอมปทุมธานี 1 (120 วัน)", crop: "ข้าวหอมปทุมธานี 1", duration: 120, fert1Day: 18, fert2Day: 55, fert3Day: 80 },
+            { name: "🌾 ข้าวไรซ์เบอร์รี่ (130 วัน)", crop: "ข้าวไรซ์เบอร์รี่", duration: 130, fert1Day: 20, fert2Day: 60, fert3Day: 85 },
+            { name: "🌾 ข้าวเจ๊กเชยเสาไห้ (140 วัน)", crop: "ข้าวเจ๊กเชยเสาไห้", duration: 140, fert1Day: 25, fert2Day: 65, fert3Day: 95 }
+        ];
+
+        // 2. แปลงนาเริ่มต้น
+        const defaultPlots = [
+            {
+                id: 'plot-1',
+                name: '🌾 แปลงนาสวนขวัญ',
+                crop: 'ข้าวขาวดอกมะลิ 105',
+                soil: 'clay',
+                area: 5,
+                plantDate: '2026-05-01',
+                duration: 120,
+                fert1Day: 20,
+                fert2Day: 55,
+                fert3Day: 80
+            }
+        ];
+
+        // โหลดข้อมูลจาก LocalStorage
+        let plots = JSON.parse(localStorage.getItem('farm_plots_data')) || defaultPlots;
+        let activePlotId = localStorage.getItem('active_plot_id') || (plots.length > 0 ? plots[0].id : null);
+
+        function saveData() {
+            localStorage.setItem('farm_plots_data', JSON.stringify(plots));
+            if (activePlotId) {
+                localStorage.setItem('active_plot_id', activePlotId);
+            }
+        }
+
+        function resetAllData() {
+            if (confirm("คุณแน่ใจหรือไม่ที่จะลบข้อมูลแปลงนาทั้งหมดเพื่อเริ่มต้นใหม่?")) {
+                localStorage.removeItem('farm_plots_data');
+                localStorage.removeItem('active_plot_id');
+                location.reload();
+            }
+        }
+
+        // 3. แสดงผลรายการแปลงนา
+        function renderPlotsList() {
+            const container = document.getElementById('plots-container');
+            container.innerHTML = '';
+
+            if (plots.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-slate-400 font-bold border-2 border-dashed border-slate-200 rounded-2xl">
+                        <p class="text-3xl mb-2">🚜</p>
+                        <p>ยังไม่มีรายการแปลงนาในระบบ</p>
+                        <p class="text-xs text-slate-400 font-normal">กดปุ่ม "+ เพิ่มแปลงนาใหม่" ด้านบนเพื่อเริ่มบันทึกข้อมูล</p>
+                    </div>`;
+                updateBanner(null);
+                return;
+            }
+
+            const activePlot = plots.find(p => p.id === activePlotId) || plots[0];
+            activePlotId = activePlot.id;
+            saveData();
+            updateBanner(activePlot);
+
+            plots.forEach(plot => {
+                const isActive = plot.id === activePlotId;
+                const soilText = plot.soil === 'clay' ? 'ดินเหนียว' : 'ดินทราย/ร่วนปนทราย';
+
+                const card = document.createElement('div');
+                card.className = `p-4 sm:p-5 rounded-2xl border-2 transition relative space-y-3 ${isActive
+                    ? 'bg-emerald-50/90 border-emerald-500 shadow-md ring-2 ring-emerald-400/50'
+                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 shadow-sm'
+                    }`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start gap-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-lg sm:text-xl font-extrabold text-slate-800">${plot.name}</h4>
+                                ${isActive ? '<span class="bg-emerald-600 text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full">✓ แปลงหลักที่เลือก</span>' : ''}
+                            </div>
+                            <p class="text-xs sm:text-sm font-extrabold text-emerald-700 mt-1">
+                                พันธุ์: ${plot.crop} | เนื้อที่: ${plot.area} ไร่ (${soilText})
+                            </p>
+                        </div>
+                        <button onclick="deletePlot('${plot.id}')" class="text-slate-400 hover:text-rose-600 font-bold p-1 text-sm transition" title="ลบแปลงนี้">
+                            🗑️
+                        </button>
+                    </div>
+
+                    <div class="text-xs font-bold text-slate-600 flex flex-wrap justify-between items-center border-t border-slate-200/80 pt-2 gap-2">
+                        <span>📅 วันเริ่มปลูก: ${plot.plantDate || 'ไม่ได้ระบุ'}</span>
+                        <span>⏱️ อายุเก็บเกี่ยว: ${plot.duration} วัน</span>
+                    </div>
+
+                    <!-- ปุ่มควบคุมประจำแปลง -->
+                    <div class="pt-2 flex flex-wrap gap-2">
+                        ${!isActive ? `
+                            <button onclick="selectPlot('${plot.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold px-3 py-2 rounded-xl transition shadow">
+                                ✅ เลือกแปลงนี้
+                            </button>
+                        ` : ''}
+                        <a href="fertilizer.html" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-extrabold px-3 py-2 rounded-xl transition shadow flex items-center gap-1">
+                            🧪 สูตร & คำนวณปุ๋ย
+                        </a>
+                        <a href="calendar.html" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-extrabold px-3 py-2 rounded-xl transition shadow flex items-center gap-1">
+                            📅 ดูปฏิทินใส่ปุ๋ย
+                        </a>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function updateBanner(plot) {
+            const bannerTitle = document.getElementById('active-plot-banner');
+            const bannerSub = document.getElementById('active-plot-sub');
+            if (plot) {
+                bannerTitle.innerText = `${plot.name}`;
+                bannerSub.innerText = `พันธุ์ ${plot.crop} | เนื้อที่ ${plot.area} ไร่ | พร้อมสำหรับการคำนวณปุ๋ย`;
+            } else {
+                bannerTitle.innerText = "ยังไม่ได้เลือกแปลงนา";
+                bannerSub.innerText = "กรุณาเพิ่มแปลงนาใหม่ด้านล่าง";
+            }
+        }
+
+        function selectPlot(id) {
+            activePlotId = id;
+            saveData();
+            renderPlotsList();
+        }
+
+        function deletePlot(id) {
+            if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบแปลงนานี้?")) {
+                plots = plots.filter(p => p.id !== id);
+                if (activePlotId === id) {
+                    activePlotId = plots.length > 0 ? plots[0].id : null;
+                }
+                saveData();
+                renderPlotsList();
+            }
+        }
+
+        // 4. ควบคุม Modal & Form
+        const modal = document.getElementById('add-plot-modal');
+        const btnOpenModal = document.getElementById('btn-open-modal');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+        const btnCancelModal = document.getElementById('btn-cancel-modal');
+        const formAddPlot = document.getElementById('form-add-plot');
+        const selectRicePreset = document.getElementById('select-rice-preset');
+
+        RICE_PRESETS.forEach((preset, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.innerText = preset.name;
+            selectRicePreset.appendChild(opt);
+        });
+
+        selectRicePreset.addEventListener('change', (e) => {
+            const selected = RICE_PRESETS[e.target.value];
+            if (selected) {
+                document.getElementById('new-plot-duration').value = selected.duration;
+            }
+        });
+
+        btnOpenModal.addEventListener('click', () => {
+            document.getElementById('new-plot-plant-date').value = new Date().toISOString().split('T')[0];
+            selectRicePreset.selectedIndex = 0;
+            document.getElementById('new-plot-duration').value = RICE_PRESETS[0].duration;
+            modal.classList.remove('hidden');
+        });
+
+        const closeModal = () => modal.classList.add('hidden');
+        btnCloseModal.addEventListener('click', closeModal);
+        btnCancelModal.addEventListener('click', closeModal);
+
+        formAddPlot.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const presetIdx = selectRicePreset.value;
+            const presetInfo = RICE_PRESETS[presetIdx] || RICE_PRESETS[0];
+
+            const newPlot = {
+                id: 'plot-' + Date.now(),
+                name: document.getElementById('new-plot-name').value,
+                crop: presetInfo.crop,
+                soil: document.getElementById('new-plot-soil').value,
+                area: parseFloat(document.getElementById('new-plot-area').value) || 1,
+                plantDate: document.getElementById('new-plot-plant-date').value,
+                duration: parseInt(document.getElementById('new-plot-duration').value) || 120,
+                fert1Day: presetInfo.fert1Day,
+                fert2Day: presetInfo.fert2Day,
+                fert3Day: presetInfo.fert3Day
+            };
+
+            plots.push(newPlot);
+            activePlotId = newPlot.id;
+
+            saveData();
+            renderPlotsList();
+            formAddPlot.reset();
+            closeModal();
+        });
+
+        // เริ่มทำงานเมื่อโหลดหน้า
+        renderPlotsList();
+    </script>
+</body>
+</html>

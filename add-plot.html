@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขข้อมูลแปลง - เกษตรอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between" onload="loadPlotData()">
+
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="index.html"
+                class="flex items-center space-x-2 bg-emerald-800 hover:bg-emerald-900 px-4 py-2 rounded-xl text-white transition">
+                <span class="text-2xl">⬅️</span>
+                <span class="font-extrabold text-lg">หน้าแรก</span>
+            </a>
+            <h1 class="text-xl font-extrabold flex items-center gap-2">
+                ✏️ แก้ไขข้อมูลแปลงเกษตร
+            </h1>
+            <div class="w-20"></div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-2xl mx-auto w-full p-4 my-4">
+        <div class="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 md:p-8 space-y-6">
+            <div class="text-center border-b pb-4">
+                <h2 class="text-2xl font-extrabold text-emerald-800">แก้ไขข้อมูลแปลงเกษตร</h2>
+                <p class="text-slate-500 font-bold mt-1">ปรับปรุงข้อมูลขนาด พืชที่ปลูก หรือวันเริ่มปลูก</p>
+            </div>
+
+            <form id="edit-plot-form" onsubmit="handleUpdatePlot(event)" class="space-y-4">
+                <div>
+                    <label class="block text-slate-700 font-bold mb-1">ชื่อแปลงเกษตร *</label>
+                    <input type="text" id="plot_name" required
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 font-bold mb-1">พันธุ์ข้าว / พืชที่ปลูก *</label>
+                    <input type="text" id="crop_type" required
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">ชนิดดิน</label>
+                        <select id="soil_type"
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                            <option value="clay">ดินเหนียว (อุ้มน้ำดี)</option>
+                            <option value="sandy">ดินทราย / ร่วนปนทราย</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">ขนาดพื้นที่ (ไร่) *</label>
+                        <input type="number" id="area_size" step="0.1" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">วันที่เริ่มปลูก *</label>
+                        <input type="date" id="plant_date" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                    </div>
+                    <div>
+                        <label class="block text-slate-700 font-bold mb-1">อายุเก็บเกี่ยว (วัน)</label>
+                        <input type="number" id="duration" required
+                            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="submit"
+                        class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xl py-3.5 rounded-xl transition shadow-md active:scale-95">
+                        💾 บันทึกการแก้ไข
+                    </button>
+                    <button type="button" onclick="confirmDelete()"
+                        class="bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xl px-5 py-3.5 rounded-xl transition">
+                        🗑️ ลบ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-3 text-center text-sm font-bold text-slate-500">
+        ระบบจัดการแปลงเกษตรอัจฉริยะ (Smart Farm)
+    </footer>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let plots = JSON.parse(localStorage.getItem('farm_plots_data')) || [];
+        const plotId = urlParams.get('id') || localStorage.getItem('active_plot_id') || (plots[0] ? plots[0].id : null);
+
+        function loadPlotData() {
+            const plot = plots.find(p => p.id === plotId);
+            if (!plot) {
+                alert('ไม่พบข้อมูลแปลงนาที่ต้องการแก้ไข');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('plot_name').value = plot.name || '';
+            document.getElementById('crop_type').value = plot.crop || '';
+            document.getElementById('soil_type').value = plot.soil || 'clay';
+            document.getElementById('area_size').value = plot.area || 1;
+            document.getElementById('plant_date').value = plot.plantDate || '';
+            document.getElementById('duration').value = plot.duration || 120;
+        }
+
+        function handleUpdatePlot(e) {
+            e.preventDefault();
+            const index = plots.findIndex(p => p.id === plotId);
+
+            if (index !== -1) {
+                plots[index].name = document.getElementById('plot_name').value;
+                plots[index].crop = document.getElementById('crop_type').value;
+                plots[index].soil = document.getElementById('soil_type').value;
+                plots[index].area = parseFloat(document.getElementById('area_size').value);
+                plots[index].plantDate = document.getElementById('plant_date').value;
+                plots[index].duration = parseInt(document.getElementById('duration').value);
+
+                localStorage.setItem('farm_plots_data', JSON.stringify(plots));
+                alert('อัปเดตข้อมูลสำเร็จ!');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function confirmDelete() {
+            if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบแปลงเกษตรนี้?')) {
+                plots = plots.filter(p => p.id !== plotId);
+                localStorage.setItem('farm_plots_data', JSON.stringify(plots));
+
+                let activeId = localStorage.getItem('active_plot_id');
+                if (activeId === plotId) {
+                    localStorage.setItem('active_plot_id', plots.length > 0 ? plots[0].id : '');
+                }
+
+                alert('ลบแปลงเกษตรเรียบร้อยแล้ว');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+
+</html>

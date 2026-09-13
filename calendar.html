@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 ปฏิทินเพาะปลูก - เกษตรอัจฉริยะ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER & NAVBAR -->
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl">🌾</span>
+                <div>
+                    <h1 class="text-xl font-extrabold leading-tight">เกษตรอัจฉริยะ</h1>
+                    <p class="text-xs text-emerald-200 font-semibold">ระบบคำนวณปุ๋ย & จัดการแปลงนา</p>
+                </div>
+            </div>
+            <a href="index.html"
+                class="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs transition border border-emerald-600">
+                ⚙️ จัดการแปลงนา
+            </a>
+        </div>
+
+        <nav class="bg-emerald-800 text-white border-t border-emerald-600">
+            <div class="max-w-4xl mx-auto flex justify-around text-center text-sm font-bold">
+                <a href="index.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>🌾</span> <span>แปลงนาของฉัน</span>
+                </a>
+                <a href="fertilizer.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>🧪</span> <span>สูตร & คำนวณปุ๋ย</span>
+                </a>
+                <a href="calendar.html"
+                    class="w-full py-3 border-b-4 border-amber-400 bg-emerald-900 font-extrabold transition flex items-center justify-center gap-1.5">
+                    <span>📅</span> <span>ปฏิทินเพาะปลูก</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-3xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
+
+        <!-- Banner คาดการณ์วันเก็บเกี่ยว -->
+        <div
+            class="bg-amber-500 text-white rounded-3xl p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <p class="text-amber-100 text-xs sm:text-sm font-bold" id="calendar-plot-title">ปฏิทินเพาะปลูก</p>
+                <p class="text-xs text-amber-100 font-semibold mt-1">คาดการณ์วันเก็บเกี่ยวข้าว:</p>
+                <h2 id="harvest-date-text" class="text-2xl sm:text-3xl font-extrabold mt-0.5">-- -- ----</h2>
+            </div>
+            <div id="countdown-badge"
+                class="bg-white text-amber-800 font-extrabold px-4 py-2 rounded-2xl text-sm shadow">
+                กำลังคำนวณ...
+            </div>
+        </div>
+
+        <!-- ปฏิทินแสดงผล -->
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+
+            <!-- ปุ่มเปลี่ยนเดือน -->
+            <div class="flex justify-between items-center">
+                <button id="btn-prev"
+                    class="bg-slate-100 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition">◄
+                    เดือนก่อนหน้า</button>
+                <h4 id="calendar-month-year" class="text-lg font-extrabold text-emerald-800">เดือน ปี</h4>
+                <button id="btn-next"
+                    class="bg-slate-100 hover:bg-emerald-600 hover:text-white px-3 py-1.5 rounded-xl font-bold text-xs sm:text-sm transition">เดือนถัดไป
+                    ►</button>
+            </div>
+
+            <!-- หัวตารางวัน -->
+            <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-500 text-xs border-b pb-2">
+                <span
+                    class="text-rose-500">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span
+                    class="text-blue-500">ส</span>
+            </div>
+
+            <!-- วันที่ในปฏิทิน -->
+            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1 sm:gap-2"></div>
+        </div>
+
+        <!-- รายการหมุดวันกิจกรรม -->
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-3">
+            <h4 class="text-lg font-extrabold text-slate-800 border-b pb-2 flex items-center gap-2">
+                📌 ลำดับเหตุการณ์และกำหนดการใส่ปุ๋ย
+            </h4>
+            <div id="events-list-container" class="space-y-2 text-xs sm:text-sm font-bold">
+                <!-- JS ใส่หมุดวันกิจกรรม -->
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 text-center py-4 text-xs font-bold mt-auto">
+        <p>🌾 ระบบเกษตรอัจฉริยะ - จัดการปุ๋ยและปฏิทินเพาะปลูกข้าว</p>
+    </footer>
+
+    <script>
+        const plots = JSON.parse(localStorage.getItem('farm_plots_data')) || [];
+        const activePlotId = localStorage.getItem('active_plot_id');
+        const activePlot = plots.find(p => p.id === activePlotId) || plots[0];
+
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        let viewDate = new Date();
+
+        function initCalendar() {
+            if (!activePlot || !activePlot.plantDate) {
+                document.getElementById('calendar-plot-title').innerText = "ยังไม่มีข้อมูลแปลงนา";
+                document.getElementById('harvest-date-text').innerText = "กรุณาเพิ่มแปลงนาในหน้าแรก";
+                document.getElementById('countdown-badge').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('calendar-plot-title').innerText = `🌾 แปลง: ${activePlot.name} (${activePlot.crop || 'ไม่ระบุพันธุ์'})`;
+
+            const plantDate = new Date(activePlot.plantDate);
+            const duration = activePlot.duration || 105;
+            const harvestDate = new Date(plantDate);
+            harvestDate.setDate(harvestDate.getDate() + duration);
+
+            document.getElementById('harvest-date-text').innerText = harvestDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const diffDays = Math.ceil((harvestDate - today) / (1000 * 60 * 60 * 24));
+
+            const badge = document.getElementById('countdown-badge');
+            if (diffDays > 0) {
+                badge.innerText = `⏳ เหลืออีก ${diffDays} วัน`;
+                badge.className = 'bg-white text-amber-800 font-extrabold px-4 py-2 rounded-2xl text-sm shadow';
+            } else if (diffDays === 0) {
+                badge.innerText = `🌾 เก็บเกี่ยววันนี้!`;
+                badge.className = 'bg-emerald-600 text-white font-extrabold px-4 py-2 rounded-2xl text-sm shadow';
+            } else {
+                badge.innerText = `✅ เก็บเกี่ยวแล้ว`;
+                badge.className = 'bg-slate-200 text-slate-600 font-extrabold px-4 py-2 rounded-2xl text-sm';
+            }
+
+            viewDate = new Date(plantDate);
+            renderCalendarGrid();
+            renderEventsList(plantDate, harvestDate);
+        }
+
+        function getEvents(plantDate, harvestDate) {
+            const events = {};
+            const addEvt = (d, title, icon, color) => {
+                const key = d.toISOString().split('T')[0];
+                events[key] = { title, icon, color, date: d };
+            };
+
+            addEvt(plantDate, 'เริ่มปลูก/หว่านข้าว', '🌱', 'bg-emerald-500 text-white');
+
+            const f1 = new Date(plantDate); f1.setDate(f1.getDate() + (parseInt(activePlot.fert1Day) || 20));
+            addEvt(f1, 'ใส่ปุ๋ยงวดที่ 1 (เร่งแตกกอ)', '🧪', 'bg-purple-600 text-white');
+
+            const f2 = new Date(plantDate); f2.setDate(f2.getDate() + (parseInt(activePlot.fert2Day) || 55));
+            addEvt(f2, 'ใส่ปุ๋ยงวดที่ 2 (รับท้อง)', '🧪', 'bg-purple-600 text-white');
+
+            if (activePlot.fert3Day) {
+                const f3 = new Date(plantDate); f3.setDate(f3.getDate() + parseInt(activePlot.fert3Day));
+                addEvt(f3, 'ใส่ปุ๋ยงวดที่ 3 (สะสมแป้ง)', '🧪', 'bg-purple-600 text-white');
+            }
+
+            addEvt(harvestDate, 'วันคาดการณ์เก็บเกี่ยว', '🌾', 'bg-amber-500 text-white');
+            return events;
+        }
+
+        function renderCalendarGrid() {
+            if (!activePlot || !activePlot.plantDate) return;
+
+            const plantDate = new Date(activePlot.plantDate);
+            const duration = activePlot.duration || 105;
+            const harvestDate = new Date(plantDate);
+            harvestDate.setDate(harvestDate.getDate() + duration);
+            const events = getEvents(plantDate, harvestDate);
+
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+
+            document.getElementById('calendar-month-year').innerText = `${thaiMonths[month]} ${year + 543}`;
+
+            const grid = document.getElementById('calendar-days-grid');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cellDate = new Date(year, month, day);
+                const localISO = new Date(cellDate.getTime() - (cellDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                const evt = events[localISO];
+
+                const cell = document.createElement('div');
+                cell.className = `p-1 sm:p-2 border rounded-2xl min-h-[50px] sm:min-h-[60px] flex flex-col justify-between transition ${evt ? 'border-amber-400 bg-amber-50/80 shadow-sm' : 'bg-slate-50 border-slate-200'}`;
+
+                let evtTag = '';
+                if (evt) {
+                    evtTag = `<span class="${evt.color} text-[10px] sm:text-xs font-extrabold px-1 py-0.5 rounded flex items-center justify-center">${evt.icon}</span>`;
+                }
+
+                cell.innerHTML = `
+                    <span class="text-xs font-bold ${evt ? 'text-amber-900 font-black' : 'text-slate-700'}">${day}</span>
+                    <div>${evtTag}</div>
+                `;
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderEventsList(plantDate, harvestDate) {
+            const events = getEvents(plantDate, harvestDate);
+            const container = document.getElementById('events-list-container');
+            container.innerHTML = '';
+
+            Object.values(events).sort((a, b) => a.date - b.date).forEach(e => {
+                const dateStr = e.date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-200 hover:border-emerald-300 transition';
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">${e.icon}</span>
+                        <span class="text-slate-800 font-bold">${e.title}</span>
+                    </div>
+                    <span class="text-emerald-700 font-extrabold text-xs sm:text-sm">📅 ${dateStr}</span>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        document.getElementById('btn-prev').onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendarGrid(); };
+        document.getElementById('btn-next').onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendarGrid(); };
+
+        initCalendar();
+    </script>
+</body>
+
+</html>
