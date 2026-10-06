@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - Smart Farm Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Font Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-900 min-h-screen flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1600&auto=format&fit=crop&q=80')] bg-cover bg-center relative">
+
+    <!-- Dark Overlay สำหรับเพิ่มมิติ -->
+    <div class="absolute inset-0 bg-gradient-to-br from-emerald-950/80 via-slate-900/75 to-teal-950/85 backdrop-blur-sm"></div>
+
+    <!-- Container หลัก -->
+    <div class="w-full max-w-md relative z-10">
+
+        <!-- Card สำหรับหน้าเข้าสู่ระบบ / สมัครสมาชิก -->
+        <div id="auth-card" class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20">
+            <!-- Header & Logo -->
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-600/30 ring-4 ring-emerald-100/50">
+                    <i class="fa-solid fa-wheat-awn text-white text-4xl"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Smart Farm Pro</h1>
+                <p class="text-xs text-emerald-700 font-semibold mt-1">ระบบจัดการแปลงเกษตรอัจฉริยะ</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="flex gap-2 mb-6 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
+                <button id="tab-login" onclick="toggleTab('login')"
+                    class="flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-700 text-white shadow-md transition-all duration-200">
+                    <i class="fa-solid fa-right-to-bracket mr-1.5"></i> เข้าสู่ระบบ
+                </button>
+                <button id="tab-register" onclick="toggleTab('register')"
+                    class="flex-1 py-2.5 text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition-all duration-200">
+                    <i class="fa-solid fa-user-plus mr-1.5"></i> สมัครสมาชิก
+                </button>
+            </div>
+
+            <!-- 1. ฟอร์มเข้าสู่ระบบ (Login Form) -->
+            <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <i class="fa-solid fa-user text-emerald-600 mr-1"></i> อีเมล หรือ ชื่อผู้ใช้ (Username)
+                    </label>
+                    <input type="text" id="login-identity" placeholder="เช่น user1@example.com หรือ somchai_dev" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 font-medium transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <i class="fa-solid fa-key text-emerald-600 mr-1"></i> รหัสผ่าน
+                    </label>
+                    <input type="password" id="login-pass" placeholder="••••••••" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 font-medium transition">
+                </div>
+                <button type="submit" id="btn-login-submit"
+                    class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-emerald-700/30 hover:shadow-emerald-700/50 transition-all duration-200 active:scale-[0.99]">
+                    เข้าสู่ระบบ
+                </button>
+            </form>
+
+            <!-- 2. ฟอร์มสมัครสมาชิก (Register Form) -->
+            <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <i class="fa-solid fa-envelope text-emerald-600 mr-1"></i> อีเมล (E-mail)
+                    </label>
+                    <input type="email" id="reg-email" placeholder="user@example.com" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 font-medium transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <i class="fa-solid fa-user text-emerald-600 mr-1"></i> ชื่อผู้ใช้ (Username)
+                    </label>
+                    <input type="text" id="reg-username" placeholder="somchai_dev" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 font-medium transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">
+                        <i class="fa-solid fa-key text-emerald-600 mr-1"></i> กำหนดรหัสผ่าน
+                    </label>
+                    <input type="password" id="reg-pass" placeholder="กำหนดรหัสผ่าน" required
+                        class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-800 font-medium transition">
+                </div>
+                <button type="submit" id="btn-reg-submit"
+                    class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-emerald-700/30 hover:shadow-emerald-700/50 transition-all duration-200 active:scale-[0.99]">
+                    ยืนยันสมัครสมาชิก
+                </button>
+            </form>
+        </div>
+
+        <!-- Card สำหรับแสดงผลหลังเข้าสู่ระบบ (Logged In State) -->
+        <div id="user-profile-card"
+            class="bg-white/95 backdrop-blur-md rounded-3xl shadow-2xl p-6 md:p-8 border border-white/20 hidden">
+            <div class="text-center space-y-4">
+                <div class="w-24 h-24 bg-gradient-to-tr from-amber-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto p-1 shadow-lg">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80"
+                        alt="Avatar" class="w-full h-full object-cover rounded-full border-2 border-white">
+                </div>
+                <div>
+                    <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-check mr-1 text-emerald-600"></i> เข้าสู่ระบบสำเร็จ
+                    </span>
+                    <h2 id="display-username" class="text-xl font-extrabold text-slate-800 mt-2">--</h2>
+                    <p id="display-email" class="text-xs font-semibold text-amber-600">--</p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left space-y-2 text-xs text-slate-700">
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-slate-500"><i class="fa-solid fa-hashtag mr-1"></i> Serial ID:</span>
+                        <span id="display-serial-id" class="font-bold text-emerald-700">--</span>
+                    </div>
+                    <div class="flex justify-between border-b pb-2">
+                        <span class="text-slate-500"><i class="fa-solid fa-envelope mr-1"></i> อีเมล:</span>
+                        <span id="display-email-detail" class="font-bold">--</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500"><i class="fa-solid fa-clock mr-1"></i> เวลาที่ล็อกอิน:</span>
+                        <span id="display-login-time" class="font-bold">--</span>
+                    </div>
+                </div>
+
+                <div class="pt-2 space-y-2">
+                    <a href="index.html"
+                        class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-sm shadow-lg shadow-emerald-600/30 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wheat-field"></i> เข้าสู่หน้าจัดการแปลงเกษตร
+                    </a>
+                    <button onclick="handleLogout()"
+                        class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl text-sm shadow-lg shadow-rose-600/30 transition">
+                        <i class="fa-solid fa-right-from-bracket mr-2"></i> ออกจากระบบ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript เชื่อมต่อ Supabase -->
+    <script>
+        // -----------------------------------------------------------------
+        // CONFIGURATION: ตั้งค่าการเชื่อมต่อ Supabase
+        // -----------------------------------------------------------------
+        const SUPABASE_URL = 'https://plgqgvptapgfbmnvnxus.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZ3FndnB0YXBnZmJtbnZueHVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxNTUsImV4cCI6MjEwNjYwOTE1NX0.EVgUKigGYS8zwMVMIiNrFsO-1-47kXPhbb-hf9KJW_I';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkSessionState();
+        });
+
+        // สลับหน้าเข้าสู่ระบบ / สมัครสมาชิก (Tab Switching)
+        function toggleTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const registerForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('tab-login');
+            const tabRegister = document.getElementById('tab-register');
+
+            const activeStyle = "flex-1 py-2.5 text-sm font-bold rounded-xl bg-emerald-700 text-white shadow-md transition-all duration-200";
+            const inactiveStyle = "flex-1 py-2.5 text-sm font-bold rounded-xl text-slate-600 hover:text-slate-900 transition-all duration-200";
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                tabLogin.className = activeStyle;
+                tabRegister.className = inactiveStyle;
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                tabRegister.className = activeStyle;
+                tabLogin.className = inactiveStyle;
+            }
+        }
+
+        // 1. ระบบเข้าสู่ระบบ (Login Handler) - ตรวจสอบได้ทั้ง E-mail หรือ Username
+        async function handleLogin(e) {
+            e.preventDefault();
+            const identity = document.getElementById('login-identity').value.trim();
+            const pass = document.getElementById('login-pass').value;
+
+            try {
+                // ค้นหาแถวที่ email หรือ username ตรงกับที่กรอก และ password ตรงกัน
+                const { data: users, error } = await _supabase
+                    .from('users')
+                    .select('*')
+                    .or(`email.eq.${identity},username.eq.${identity}`)
+                    .eq('password', pass);
+
+                if (error) throw error;
+
+                if (!users || users.length === 0) {
+                    alert('❌ อีเมล/ชื่อผู้ใช้ หรือ รหัสผ่านไม่ถูกต้อง');
+                    return;
+                }
+
+                const user = users[0];
+                const sessionData = {
+                    serial_id: user.serial_id,
+                    email: user.email,
+                    username: user.username,
+                    loginTime: new Date().toLocaleString('th-TH'),
+                    isLoggedIn: true
+                };
+
+                localStorage.setItem('current_user', JSON.stringify(sessionData));
+                alert(`🎉 ยินดีต้อนรับคุณ ${user.username} เข้าสู่ระบบสำเร็จ!`);
+                checkSessionState();
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ: ' + err.message);
+            }
+        }
+
+        // 2. ระบบสมัครสมาชิก (Register Handler) - บันทึก E-mail, Username, Password ลงตาราง users ใน Supabase
+        async function handleRegister(e) {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value.trim();
+            const username = document.getElementById('reg-username').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+
+            try {
+                // 1. ตรวจสอบว่า E-mail หรือ Username นี้ถูกใช้งานแล้วหรือยัง
+                const { data: existingUsers, error: checkError } = await _supabase
+                    .from('users')
+                    .select('email, username')
+                    .or(`email.eq.${email},username.eq.${username}`);
+
+                if (checkError) throw checkError;
+
+                if (existingUsers && existingUsers.length > 0) {
+                    const match = existingUsers[0];
+                    if (match.email === email) {
+                        alert('⚠️ อีเมลนี้ถูกใช้งานในระบบแล้ว');
+                    } else {
+                        alert('⚠️ ชื่อผู้ใช้นี้ถูกใช้งานในระบบแล้ว');
+                    }
+                    return;
+                }
+
+                // 2. เพิ่มผู้ใช้ใหม่ลงตาราง users ใน Supabase
+                const { data, error: insertError } = await _supabase
+                    .from('users')
+                    .insert([
+                        {
+                            email: email,
+                            username: username,
+                            password: pass
+                        }
+                    ]);
+
+                if (insertError) throw insertError;
+
+                alert('✅ สมัครสมาชิกสำเร็จ!');
+                
+                // สลับไปหน้าล็อกอินและกรอก Username + Password ให้อัตโนมัติ
+                toggleTab('login');
+                document.getElementById('login-identity').value = username;
+                document.getElementById('login-pass').value = pass;
+            } catch (err) {
+                alert('เกิดข้อผิดพลาดในการสมัครสมาชิก: ' + err.message);
+            }
+        }
+
+        // ตรวจสอบสถานะการล็อกอิน
+        function checkSessionState() {
+            const currentSession = localStorage.getItem('current_user');
+            const authCard = document.getElementById('auth-card');
+            const profileCard = document.getElementById('user-profile-card');
+
+            if (currentSession) {
+                const user = JSON.parse(currentSession);
+                document.getElementById('display-username').innerText = user.username;
+                document.getElementById('display-email').innerText = user.email;
+                document.getElementById('display-serial-id').innerText = user.serial_id || '-';
+                document.getElementById('display-email-detail').innerText = user.email;
+                document.getElementById('display-login-time').innerText = user.loginTime;
+
+                authCard.classList.add('hidden');
+                profileCard.classList.remove('hidden');
+            } else {
+                authCard.classList.remove('hidden');
+                profileCard.classList.add('hidden');
+            }
+        }
+
+        // ออกจากระบบ
+        function handleLogout() {
+            if (confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) {
+                localStorage.removeItem('current_user');
+                alert('ออกจากระบบเรียบร้อยแล้ว');
+                checkSessionState();
+            }
+        }
+    </script>
+</body>
+</html>

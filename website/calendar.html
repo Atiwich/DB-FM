@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📅 ปฏิทินเพาะปลูก - เกษตรอัจฉริยะ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -33,18 +36,22 @@
         </div>
 
         <nav class="bg-emerald-800 text-white border-t border-emerald-600">
-            <div class="max-w-4xl mx-auto flex justify-around text-center text-sm font-bold">
+            <div class="max-w-4xl mx-auto grid grid-cols-4 text-center text-xs sm:text-sm font-bold">
                 <a href="index.html"
-                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
-                    <span>🌾</span> <span>แปลงนาของฉัน</span>
+                    class="py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1 sm:gap-1.5">
+                    <span>🌾</span> <span class="hidden sm:inline">แปลงนาของฉัน</span><span class="sm:hidden">แปลงนา</span>
                 </a>
                 <a href="fertilizer.html"
-                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
-                    <span>🧪</span> <span>สูตร & คำนวณปุ๋ย</span>
+                    class="py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1 sm:gap-1.5">
+                    <span>🧪</span> <span class="hidden sm:inline">สูตร & คำนวณปุ๋ย</span><span class="sm:hidden">คำนวณปุ๋ย</span>
                 </a>
                 <a href="calendar.html"
-                    class="w-full py-3 border-b-4 border-amber-400 bg-emerald-900 font-extrabold transition flex items-center justify-center gap-1.5">
-                    <span>📅</span> <span>ปฏิทินเพาะปลูก</span>
+                    class="py-3 border-b-4 border-amber-400 bg-emerald-900 font-extrabold transition flex items-center justify-center gap-1 sm:gap-1.5">
+                    <span>📅</span> <span class="hidden sm:inline">ปฏิทินเพาะปลูก</span><span class="sm:hidden">ปฏิทิน</span>
+                </a>
+                <a href="seeds.html"
+                    class="py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1 sm:gap-1.5">
+                    <span>🌱</span> <span class="hidden sm:inline">รายการเมล็ดพันธุ์</span><span class="sm:hidden">เมล็ดพันธุ์</span>
                 </a>
             </div>
         </nav>

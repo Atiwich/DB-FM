@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌱 รายการเมล็ดพันธุ์ - เกษตรอัจฉริยะ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Font Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER & NAVBAR -->
+    <header class="bg-emerald-700 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl">🌾</span>
+                <div>
+                    <h1 class="text-xl font-extrabold leading-tight">เกษตรอัจฉริยะ</h1>
+                    <p class="text-xs text-emerald-200 font-semibold">ระบบคำนวณปุ๋ย & จัดการแปลงนา</p>
+                </div>
+            </div>
+            <a href="index.html"
+                class="bg-emerald-800 hover:bg-emerald-900 text-white font-extrabold px-3 py-1.5 rounded-xl text-xs transition border border-emerald-600">
+                ⚙️ จัดการแปลงนา
+            </a>
+        </div>
+
+        <nav class="bg-emerald-800 text-white border-t border-emerald-600">
+            <div class="max-w-4xl mx-auto flex justify-around text-center text-sm font-bold">
+                <a href="index.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>🌾</span> <span>แปลงนาของฉัน</span>
+                </a>
+                <a href="fertilizer.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>🧪</span> <span>สูตร & คำนวณปุ๋ย</span>
+                </a>
+                <a href="calendar.html"
+                    class="w-full py-3 border-b-4 border-transparent hover:bg-emerald-700 text-emerald-200 transition flex items-center justify-center gap-1.5">
+                    <span>📅</span> <span>ปฏิทินเพาะปลูก</span>
+                </a>
+                <a href="seeds.html"
+                    class="w-full py-3 border-b-4 border-amber-400 bg-emerald-900 font-extrabold transition flex items-center justify-center gap-1.5">
+                    <span>🌱</span> <span>รายการเมล็ดพันธุ์</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-3xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
+
+        <!-- Banner รายการเมล็ดพันธุ์ -->
+        <div class="bg-emerald-800 text-white rounded-3xl p-6 shadow-md space-y-2">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">🌱</span>
+                <div>
+                    <p class="text-emerald-200 text-xs sm:text-sm font-bold">คลังเมล็ดพันธุ์</p>
+                    <h2 class="text-2xl sm:text-3xl font-extrabold">รายการเมล็ดพันธุ์ทั้งหมด</h2>
+                </div>
+            </div>
+            <p class="text-xs text-emerald-100 font-semibold">แสดงจำนวนคงเหลือของเมล็ดพันธุ์แต่ละชนิดจากระบบ Supabase</p>
+        </div>
+
+        <!-- รายการเมล็ดจาก Supabase -->
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 space-y-4">
+            <h3 class="text-xl font-extrabold text-slate-800 border-b pb-3 flex items-center gap-2">
+                📦 สรุปจำนวนเมล็ดพันธุ์ที่มีในคลัง (กระสอบ)
+            </h3>
+            <div id="seeds-list-container" class="space-y-3">
+                <!-- ข้อมูลจาก Supabase จะโหลดใส่ตรงนี้ -->
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-400 text-center py-4 text-xs font-bold mt-auto">
+        <p>🌾 ระบบเกษตรอัจฉริยะ - จัดการปุ๋ยและปฏิทินเพาะปลูกข้าว</p>
+    </footer>
+
+    <!-- JavaScript ดึงข้อมูลจาก Supabase -->
+    <script>
+        const SUPABASE_URL = 'https://plgqgvptapgfbmnvnxus.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZ3FndnB0YXBnZmJtbnZueHVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxNTUsImV4cCI6MjEwNjYwOTE1NX0.EVgUKigGYS8zwMVMIiNrFsO-1-47kXPhbb-hf9KJW_I';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fetchSeedsData() {
+            const container = document.getElementById('seeds-list-container');
+            container.innerHTML = '<p class="text-center text-slate-400 py-6 font-bold">⏳ กำลังโหลดข้อมูลเมล็ดพันธุ์จาก Supabase...</p>';
+
+            try {
+                const { data: seeds, error } = await _supabase
+                    .from('seeds')
+                    .select('*')
+                    .order('seed_id', { ascending: true });
+
+                if (error) throw error;
+
+                if (!seeds || seeds.length === 0) {
+                    container.innerHTML = '<p class="text-center text-slate-400 py-6 font-bold">ไม่พบข้อมูลเมล็ดพันธุ์ในระบบ</p>';
+                    return;
+                }
+
+                container.innerHTML = seeds.map(seed => `
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 hover:border-emerald-400 transition flex justify-between items-center flex-wrap gap-3 shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center text-2xl font-black">
+                                🌱
+                            </div>
+                            <div>
+                                <h4 class="text-base sm:text-lg font-extrabold text-slate-800">${seed.seed_name}</h4>
+                                <p class="text-xs text-slate-500 font-bold">${seed.description || 'ไม่มีรายละเอียดเพิ่มเติม'}</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-right shadow">
+                            <p class="text-[10px] text-emerald-100 font-bold">จำนวนที่มี</p>
+                            <p class="text-lg font-extrabold">${seed.sack_quantity} <span class="text-xs font-normal">กระสอบ</span></p>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = `<p class="text-center text-rose-500 py-6 font-bold">เกิดข้อผิดพลาดในการโหลดข้อมูล: ${err.message}</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchSeedsData);
+    </script>
+</body>
+
+</html>
