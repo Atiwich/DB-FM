@@ -1,0 +1,20 @@
+# Environment Variables
+.env
+.env.local
+.env*.local
+config.js
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json

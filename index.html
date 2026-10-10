@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Google Font Prompt -->
@@ -152,11 +153,7 @@
 
     <!-- JavaScript เชื่อมต่อ Supabase -->
     <script>
-        // -----------------------------------------------------------------
         // CONFIGURATION: ตั้งค่าการเชื่อมต่อ Supabase
-        // -----------------------------------------------------------------
-        const SUPABASE_URL = 'https://plgqgvptapgfbmnvnxus.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsZ3FndnB0YXBnZmJtbnZueHVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwMzMxNTUsImV4cCI6MjEwNjYwOTE1NX0.EVgUKigGYS8zwMVMIiNrFsO-1-47kXPhbb-hf9KJW_I';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         window.addEventListener('DOMContentLoaded', () => {
