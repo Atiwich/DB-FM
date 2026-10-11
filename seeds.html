@@ -100,9 +100,17 @@
 
             try {
                 const { data: seeds, error } = await _supabase
-                    .from('seeds')
-                    .select('*')
-                    .order('seed_id', { ascending: true });
+            .from('seeds')
+            .select(`
+                seed_id,
+                seed_name,
+                sack_quantity,
+                seed_categories (
+                    category_name,
+                    description
+                )
+            `)
+            .order('seed_id', { ascending: true });
 
                 if (error) throw error;
 

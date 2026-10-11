@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📅 ปฏิทินเพาะปลูก - เกษตรอัจฉริยะ</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     
+    <!-- Google Font Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -60,17 +63,27 @@
     <!-- MAIN CONTENT -->
     <main class="max-w-3xl mx-auto px-4 py-6 w-full flex-1 space-y-6">
 
-        <!-- Banner คาดการณ์วันเก็บเกี่ยว -->
-        <div
-            class="bg-amber-500 text-white rounded-3xl p-6 shadow-md flex flex-wrap justify-between items-center gap-4">
-            <div>
-                <p class="text-amber-100 text-xs sm:text-sm font-bold" id="calendar-plot-title">ปฏิทินเพาะปลูก</p>
-                <p class="text-xs text-amber-100 font-semibold mt-1">คาดการณ์วันเก็บเกี่ยวข้าว:</p>
-                <h2 id="harvest-date-text" class="text-2xl sm:text-3xl font-extrabold mt-0.5">-- -- ----</h2>
-            </div>
-            <div id="countdown-badge"
-                class="bg-white text-amber-800 font-extrabold px-4 py-2 rounded-2xl text-sm shadow">
-                กำลังคำนวณ...
+        <!-- Banner คาดการณ์วันเก็บเกี่ยว & ตัวเลือกสลับแปลงนา -->
+        <div class="bg-amber-500 text-white rounded-3xl p-6 shadow-md space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <p class="text-amber-100 text-xs sm:text-sm font-bold" id="calendar-plot-title">ปฏิทินเพาะปลูก</p>
+                    <p class="text-xs text-amber-100 font-semibold mt-1">คาดการณ์วันเก็บเกี่ยวข้าว:</p>
+                    <h2 id="harvest-date-text" class="text-2xl sm:text-3xl font-extrabold mt-0.5">-- -- ----</h2>
+                </div>
+
+                <div class="w-full sm:w-auto flex flex-col items-start sm:items-end gap-2">
+                    <div id="countdown-badge" class="bg-white text-amber-800 font-extrabold px-4 py-2 rounded-2xl text-sm shadow">
+                        กำลังคำนวณ...
+                    </div>
+                    <!-- Dropdown สลับแปลงนา -->
+                    <div class="w-full sm:w-auto mt-1">
+                        <label for="plot-select" class="block text-[10px] text-amber-100 font-bold mb-0.5">สลับแปลงนา:</label>
+                        <select id="plot-select" onchange="switchPlot(this.value)"
+                            class="w-full sm:w-auto bg-amber-600 text-white border border-amber-300 rounded-xl px-3 py-1.5 text-xs font-bold focus:outline-none">
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -90,9 +103,7 @@
 
             <!-- หัวตารางวัน -->
             <div class="grid grid-cols-7 gap-1 text-center font-bold text-slate-500 text-xs border-b pb-2">
-                <span
-                    class="text-rose-500">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span
-                    class="text-blue-500">ส</span>
+                <span class="text-rose-500">อา</span><span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span class="text-blue-500">ส</span>
             </div>
 
             <!-- วันที่ในปฏิทิน -->
@@ -116,35 +127,109 @@
     </footer>
 
     <script>
-        const plots = JSON.parse(localStorage.getItem('farm_plots_data')) || [];
-        const activePlotId = localStorage.getItem('active_plot_id');
-        const activePlot = plots.find(p => p.id === activePlotId) || plots[0];
-
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        
+        let plots = [];
+        let activePlot = null;
         let viewDate = new Date();
 
+        // ช่วยแปลง Date เป็น YYYY-MM-DD แบบไม่ติดปัญหา Timezone Offset
+        function formatDateISO(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ช่วยแปลงข้อความ Date string (YYYY-MM-DD) เป็น Date Object ในเวลาท้องถิ่น
+        function parseLocalDate(dateStr) {
+            if (!dateStr) return new Date();
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            }
+            return new Date(dateStr);
+        }
+
+        // 1. ดึงข้อมูลแปลงนาจาก Supabase และ LocalStorage
+        async function fetchPlotsData() {
+            const currentUser = JSON.parse(localStorage.getItem('current_user')) || { user_id: 1 };
+
+            try {
+                // ดึงข้อมูลจาก Supabase farm_plots
+                const { data, error } = await _supabase
+                    .from('farm_plots')
+                    .select('*')
+                    .eq('user_id', currentUser.user_id || 1);
+
+                if (!error && data && data.length > 0) {
+                    plots = data.map(p => ({
+                        id: String(p.plot_id),
+                        name: p.plot_name,
+                        crop: p.crop_type,
+                        soil: p.soil_type,
+                        area: p.area_size,
+                        plantDate: p.plant_date,
+                        duration: p.duration_days,
+                        fert1Day: p.fert1_day,
+                        fert2Day: p.fert2_day,
+                        fert3Day: p.fert3_day
+                    }));
+                } else {
+                    plots = JSON.parse(localStorage.getItem('farm_plots_data')) || [];
+                }
+            } catch (err) {
+                console.warn("Supabase fetch failed, falling back to localStorage", err);
+                plots = JSON.parse(localStorage.getItem('farm_plots_data')) || [];
+            }
+
+            initCalendar();
+        }
+
+        function switchPlot(plotId) {
+            localStorage.setItem('active_plot_id', plotId);
+            initCalendar();
+        }
+
+        // 2. เริ่มต้นคำนวณและปรับวันที่บนปฏิทินให้ตรงตามวันที่สร้าง/เริ่มปลูกแปลงนา
         function initCalendar() {
-            if (!activePlot || !activePlot.plantDate) {
+            const selectEl = document.getElementById('plot-select');
+
+            if (!plots || plots.length === 0) {
                 document.getElementById('calendar-plot-title').innerText = "ยังไม่มีข้อมูลแปลงนา";
                 document.getElementById('harvest-date-text').innerText = "กรุณาเพิ่มแปลงนาในหน้าแรก";
                 document.getElementById('countdown-badge').style.display = 'none';
+                selectEl.innerHTML = '<option>ไม่มีแปลงนา</option>';
                 return;
             }
 
+            const activePlotId = localStorage.getItem('active_plot_id');
+            activePlot = plots.find(p => p.id === String(activePlotId)) || plots[0];
+            localStorage.setItem('active_plot_id', activePlot.id);
+
+            // อัปเดต Dropdown เลือกแปลงนา
+            selectEl.innerHTML = plots.map(p => `<option value="${p.id}" ${p.id === activePlot.id ? 'selected' : ''}>${p.name}</option>`).join('');
+
             document.getElementById('calendar-plot-title').innerText = `🌾 แปลง: ${activePlot.name} (${activePlot.crop || 'ไม่ระบุพันธุ์'})`;
 
-            const plantDate = new Date(activePlot.plantDate);
-            const duration = activePlot.duration || 105;
+            // อ่านวันที่เริ่มปลูกของแปลงนา
+            const plantDate = parseLocalDate(activePlot.plantDate);
+            const duration = parseInt(activePlot.duration) || 120;
+            
+            // คำนวณวันเก็บเกี่ยว
             const harvestDate = new Date(plantDate);
             harvestDate.setDate(harvestDate.getDate() + duration);
 
             document.getElementById('harvest-date-text').innerText = harvestDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
 
+            // คำนวณจำนวนวันที่เหลือ
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const diffDays = Math.ceil((harvestDate - today) / (1000 * 60 * 60 * 24));
 
             const badge = document.getElementById('countdown-badge');
+            badge.style.display = 'block';
             if (diffDays > 0) {
                 badge.innerText = `⏳ เหลืออีก ${diffDays} วัน`;
                 badge.className = 'bg-white text-amber-800 font-extrabold px-4 py-2 rounded-2xl text-sm shadow';
@@ -156,28 +241,34 @@
                 badge.className = 'bg-slate-200 text-slate-600 font-extrabold px-4 py-2 rounded-2xl text-sm';
             }
 
-            viewDate = new Date(plantDate);
+            // ⭐ สำคัญ: ปรับหน้าปฏิทินไปยังเดือนและปีของวันที่เริ่มปลูกแปลงนานั้นๆ ⭐
+            viewDate = new Date(plantDate.getFullYear(), plantDate.getMonth(), 1);
+
             renderCalendarGrid();
             renderEventsList(plantDate, harvestDate);
         }
 
+        // 3. กำหนดหมุดเหตุการณ์ต่างๆ (เริ่มปลูก, ใส่ปุ๋ยงวด 1-3, วันเก็บเกี่ยว)
         function getEvents(plantDate, harvestDate) {
             const events = {};
             const addEvt = (d, title, icon, color) => {
-                const key = d.toISOString().split('T')[0];
+                const key = formatDateISO(d);
                 events[key] = { title, icon, color, date: d };
             };
 
             addEvt(plantDate, 'เริ่มปลูก/หว่านข้าว', '🌱', 'bg-emerald-500 text-white');
 
-            const f1 = new Date(plantDate); f1.setDate(f1.getDate() + (parseInt(activePlot.fert1Day) || 20));
+            const f1 = new Date(plantDate); 
+            f1.setDate(f1.getDate() + (parseInt(activePlot.fert1Day) || 20));
             addEvt(f1, 'ใส่ปุ๋ยงวดที่ 1 (เร่งแตกกอ)', '🧪', 'bg-purple-600 text-white');
 
-            const f2 = new Date(plantDate); f2.setDate(f2.getDate() + (parseInt(activePlot.fert2Day) || 55));
+            const f2 = new Date(plantDate); 
+            f2.setDate(f2.getDate() + (parseInt(activePlot.fert2Day) || 55));
             addEvt(f2, 'ใส่ปุ๋ยงวดที่ 2 (รับท้อง)', '🧪', 'bg-purple-600 text-white');
 
             if (activePlot.fert3Day) {
-                const f3 = new Date(plantDate); f3.setDate(f3.getDate() + parseInt(activePlot.fert3Day));
+                const f3 = new Date(plantDate); 
+                f3.setDate(f3.getDate() + parseInt(activePlot.fert3Day));
                 addEvt(f3, 'ใส่ปุ๋ยงวดที่ 3 (สะสมแป้ง)', '🧪', 'bg-purple-600 text-white');
             }
 
@@ -185,11 +276,12 @@
             return events;
         }
 
+        // 4. วาดตารางปฏิทิน
         function renderCalendarGrid() {
             if (!activePlot || !activePlot.plantDate) return;
 
-            const plantDate = new Date(activePlot.plantDate);
-            const duration = activePlot.duration || 105;
+            const plantDate = parseLocalDate(activePlot.plantDate);
+            const duration = parseInt(activePlot.duration) || 120;
             const harvestDate = new Date(plantDate);
             harvestDate.setDate(harvestDate.getDate() + duration);
             const events = getEvents(plantDate, harvestDate);
@@ -211,15 +303,15 @@
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const cellDate = new Date(year, month, day);
-                const localISO = new Date(cellDate.getTime() - (cellDate.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                const localISO = formatDateISO(cellDate);
                 const evt = events[localISO];
 
                 const cell = document.createElement('div');
-                cell.className = `p-1 sm:p-2 border rounded-2xl min-h-[50px] sm:min-h-[60px] flex flex-col justify-between transition ${evt ? 'border-amber-400 bg-amber-50/80 shadow-sm' : 'bg-slate-50 border-slate-200'}`;
+                cell.className = `p-1 sm:p-2 border rounded-2xl min-h-[50px] sm:min-h-[60px] flex flex-col justify-between transition ${evt ? 'border-amber-400 bg-amber-50/80 shadow-sm ring-1 ring-amber-300' : 'bg-slate-50 border-slate-200'}`;
 
                 let evtTag = '';
                 if (evt) {
-                    evtTag = `<span class="${evt.color} text-[10px] sm:text-xs font-extrabold px-1 py-0.5 rounded flex items-center justify-center">${evt.icon}</span>`;
+                    evtTag = `<span class="${evt.color} text-[10px] sm:text-xs font-extrabold px-1 py-0.5 rounded flex items-center justify-center shadow-sm" title="${evt.title}">${evt.icon}</span>`;
                 }
 
                 cell.innerHTML = `
@@ -230,6 +322,7 @@
             }
         }
 
+        // 5. แสดงผลรายการลำดับเหตุการณ์
         function renderEventsList(plantDate, harvestDate) {
             const events = getEvents(plantDate, harvestDate);
             const container = document.getElementById('events-list-container');
@@ -238,7 +331,7 @@
             Object.values(events).sort((a, b) => a.date - b.date).forEach(e => {
                 const dateStr = e.date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
                 const row = document.createElement('div');
-                row.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-200 hover:border-emerald-300 transition';
+                row.className = 'flex justify-between items-center p-3 bg-slate-50 rounded-2xl border border-slate-200 hover:border-emerald-300 transition shadow-sm';
                 row.innerHTML = `
                     <div class="flex items-center gap-2">
                         <span class="text-lg">${e.icon}</span>
@@ -250,10 +343,11 @@
             });
         }
 
+        // ปุ่มเลื่อนเดือนปฏิทิน
         document.getElementById('btn-prev').onclick = () => { viewDate.setMonth(viewDate.getMonth() - 1); renderCalendarGrid(); };
         document.getElementById('btn-next').onclick = () => { viewDate.setMonth(viewDate.getMonth() + 1); renderCalendarGrid(); };
 
-        initCalendar();
+        document.addEventListener('DOMContentLoaded', fetchPlotsData);
     </script>
 </body>
 
