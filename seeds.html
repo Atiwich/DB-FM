@@ -92,7 +92,7 @@
 
     <!-- JavaScript ดึงข้อมูลจาก Supabase -->
     <script>
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
         async function fetchSeedsData() {
             const container = document.getElementById('seeds-list-container');

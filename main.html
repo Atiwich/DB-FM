@@ -204,7 +204,7 @@
 
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
         let currentUser = JSON.parse(localStorage.getItem('current_user')) || { user_id: 1, username: 'Guest' };
         let plots = [];
